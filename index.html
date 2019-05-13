@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Proyecto 2</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Favicon -->
+	<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<!-- Leaflet Api -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+		integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+		crossorigin="" />
+	<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+		integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+		crossorigin=""></script>
+	<!-- CSS -->
+	<link rel="stylesheet" href="css/style.css" />
+	<!-- Draw Api -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.2.3/leaflet.draw.css" rel="stylesheet" />
+
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" onclick="showPanel()">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="../Proyecto/index.html">Proyecto 2o Parcial </a>
+			</div>
+		</div>
+	</div>
+	<div id="container">
+		<div id="sidebar">
+			<div class="sidebar-wrapper">
+				<div id="features" class="panel panel-default" style="height:100% !important; background: rgb(228, 228, 228);">
+					<div class="panel-heading">
+						<h3 class="panel-title">Control Panel</h3>
+					</div></br>
+					<div class="container-fluid">
+						<div class="panel panel-default">
+							<div class="panel-heading">Color Selection</div>
+							<div class="panel-body"><input type="color" id="color" placeholder="color" name="favcolor"value="#ff0000"></div>
+						</div>
+						<div class="panel panel-default">
+							<div class="panel-heading">Load File</div>
+							<div class="panel-body"><input type="file" class="form-control-file" id="btnFile"></div>
+						</div>
+						<div class="panel panel-default">
+							<div class="panel-heading">Save File</div>
+							<div class="panel-body"><a id="download" download="coordinatesFile.txt" href="#" role="button" class="btn btn-info">Clic to Save</a></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="mapid"></div>
+	</div>
+
+	<!-- My Scritps -->
+	<script src="js/map_script.js"></script>
+</body>
+
+</html>
