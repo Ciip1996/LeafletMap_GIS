@@ -13,6 +13,13 @@ var map = L.map('mapid', {
   zoom: 10
 });
 
+function onEachFeature1(feature, layer) {
+  layer.on({
+    mouseover: alert(":v"),
+    mouseout: alert(":v"),
+    click: alert(":v")
+  });
+}
 /*
 -  Global Variables: 
 */
@@ -42,14 +49,14 @@ var options = {
       }
     },
     polyline: {
-    	shapeOptions: {
+      shapeOptions: {
         color: '#f357a1',
         weight: 10
-          }
+      }
     },
     // disable toolbar item by setting it to false
-    polyline: true,
-    circle: true, // Turns off this drawing tool
+    polyline: false,
+    circle: false, // Turns off this drawing tool
     polygon: true,
     marker: false,
     rectangle: false,
@@ -64,200 +71,190 @@ var options = {
 var drawControl = new L.Control.Draw(options);
 map.addControl(drawControl);
 
-map.on('draw:created', function(e) {
+map.on('draw:created', function (e) {
   var type = e.layerType,
     layer = e.layer;
-    layer.options.color = document.getElementById("color").value.toString();
+  layer.options.color = document.getElementById("color").value.toString();
 
   if (type === 'polyline') {
     layer.bindPopup('A polyline!');
     editableLayersPolyline.addLayer(layer);
-  } 
-  else if ( type === 'polygon') {
+  }
+  else if (type === 'polygon') {
     layer.bindPopup('A polygon!');
     editableLayersPolygon.addLayer(layer);
-  } 
-  else if (type === 'circle') 
-  {
+  }
+  else if (type === 'circle') {
     layer.bindPopup('A point!');
     editableLayersPoint.addLayer(layer);
   }
   //editableLayersPolygon.addLayer(layer);
 });
 
-var filters = {
-  "Polylines": editableLayersPolyline,
-  "Polygon": editableLayersPolygon,
-  "Point": editableLayersPoint
-};
+var filters = {};
+var layerControl = false;
+
 // Add a layer control element to the map
-filterLayersControl = L.control.layers(null, filters, {position: 'topright', collapsed: true});
-filterLayersControl.addTo(map);
-
-
-var guid_Coordinates = "";
+var textFile = "";
 var polygon = {
   "guid": null,
-  "coordinates": []
+  "coordinates": [],
+  "ciudad": ""
 }
 var arrayPolygon = [];
-
-
+var tempArray = [];
+var layersArray = [];
+var countLayers = 0;
 
 var popup = L.popup();
 
 // Functions:
-function textFileToObject()
-{
-  try 
-  {
+function textFileToObject() {
+  try {
+    //tempArray = arrayPolygon; //save the current poligons
+    arrayPolygon = [];//clear the array
+
     var currentPolygoneCoordinates = [];
-    var guidRowsArray = guid_Coordinates.split('\n');
+    var polygonsArray = textFile.split('\n');
     var i = 1;
+    polygonsArray.forEach(element => {
+      //Parsing the weird fucking type 
+     
+      var GUID_elements = element.split(')))",');
+      if (element != ""){
+        var Coordinates = GUID_elements[0].split('MULTIPOLYGON (((');;
+        var otherElements = GUID_elements[1].split(',');
 
-    guidRowsArray.forEach(element => {
-      //GUID;SEGMENTNAME;NODENUMBER;X;Y
-    
-      var GUID_elements = element.split(';');
-      var node = GUID_elements[2];
-      var X = ((parseFloat(GUID_elements[3]) / 10000)) * .1;// - 103.9;
-      var Y = ((parseFloat(GUID_elements[4]) / 100000)) * .9;// + 0.07); //al tanteo
-      currentPolygoneCoordinates.push([Y,X]);  
-      
+        var e2 = otherElements[1];
+        var ciudad = otherElements[4];
 
-      //validations:
-      if(i < guidRowsArray.length)
-      {
-        //console.log(i);
-        var txtNextGuidRow = guidRowsArray[i].split(';');
-        var nextNode = txtNextGuidRow[2];
-        if (nextNode == 1)
-        {
-          polygon.coordinates = currentPolygoneCoordinates;
-          polygon.guid = GUID_elements[0];
-          arrayPolygon.push(polygon);
-          currentPolygoneCoordinates = [];
-          polygon={};
-        }
-      }
-      else{
+        var stringCoordinates = Coordinates[1].split(',');//string with both x and y
+        stringCoordinates.forEach(coordinate => {
+          var coordinate = coordinate.split(' ');
+          var X = ((parseFloat(coordinate[0]) / 10000)) * .1;// - 103.9;
+          var Y = ((parseFloat(coordinate[1]) / 100000)) * .9;// + 0.07); //al tanteo
+          currentPolygoneCoordinates.push([Y,X]);      
+        });
+
         polygon.coordinates = currentPolygoneCoordinates;
-        polygon.guid = GUID_elements[0];
+        polygon.guid = e2;
+        polygon.ciudad = ciudad;
         arrayPolygon.push(polygon);
         currentPolygoneCoordinates = [];
-        polygon={};
+        polygon = {};
+        i++;
       }
-      i++;
+    });
+    layersArray.push(arrayPolygon);//saving the layers for later.
+    //arrayPolygon = arrayPolygon.concat(tempArray); 
+    //limpiar();
+
+    //creating the new feature group which is going to be the layer group for filters:
+    var newLayer = new L.FeatureGroup();
+    map.addLayer(newLayer);
+
+    var _color = document.getElementById("color").value.toString();
+    
+    /*geojson = L.geoJson(statesData, {
+      style: style,
+      onEachFeature: onEachFeature
+    }).addTo(map);
+    */
+    arrayPolygon.forEach(element => {
+      var _polygone = L.polygon(element.coordinates, { color: _color }).addTo(map).bindPopup("Ciudad: " + element.ciudad + " Id:" + element.guid);
+      newLayer.addLayer(_polygone);
     });
 
-  //  var group = [];
-  var _color = document.getElementById("color").value.toString();
-    if (arrayPolygon.length == 0)
-    {  
-      var _polygone = L.polygon(currentPolygoneCoordinates, {color: _color}).addTo(map).bindPopup("I am a polygon.");
-      editableLayersPolygon.addLayer(_polygone);
-      //group.push(_polygone);
+    //add the control layer to the map and update it too:
+    if(layerControl === false) {
+      layerControl = L.control.layers().addTo(map);
     }
-    else {  
-      arrayPolygon.forEach(element => {
-        var _polygone = L.polygon(element.coordinates, {color: _color}).addTo(map).bindPopup("I am the polygon with id: " + element.guid);
-        //group.push(_polygone);
-        editableLayersPolygon.addLayer(_polygone);
-      });
-    }    
+    layerControl.addOverlay(newLayer, "Layer" + countLayers);
+    countLayers++;
     // zoom the map to the polyline
-    //var gp = new L.featureGroup(group);
-    map.fitBounds(editableLayersPolygon.getBounds());
-  } 
+    map.fitBounds(newLayer.getBounds());
+  }
   catch (error) {
     alert("The file you are trying to open might be corrupted. \n Error Message: " + error.message);
   }
 }
-function limpiar(){
-  for(i in map._layers) {
-    if(map._layers[i]._path != undefined) {
-        try {
-          map.removeLayer(map._layers[i]);
-        }
-        catch(e) {
-            console.log("problem with " + e + map._layers[i]);
-        }
+function limpiar() {
+  for (i in map._layers) {
+    if (map._layers[i]._path != undefined) {
+      try {
+        map.removeLayer(map._layers[i]);
+      }
+      catch (e) {
+        console.log("problem with " + e + map._layers[i]);
+      }
     }
-}
+  }
 }
 
-function saveCoordinatesFile(){
+function saveCoordinatesFile() {
   var coords = []; //define an array to store coordinates
   //if I ever need the geoJSON info:
-  
+
   var geoJSONObject_Polygon = editableLayersPolygon.toGeoJSON();
-  //var geoJSONObject_Polyline = editableLayersPolyline.toGeoJSON();
-  //var geoJSONObject_Point = editableLayersPoint.toGeoJSON();
-  var array = [geoJSONObject_Polygon ];
-  
-  array.forEach(function(each) {
+  var array = [geoJSONObject_Polygon];
+
+  array.forEach(function (each) {
     L.geoJson(each, {
       onEachFeature: function (feature, layer) {
-        popupOptions = {maxWidth: 200};
+        popupOptions = { maxWidth: 200 };
         layer.bindPopup(feature.properties.popupContent);
         coords.push(feature.geometry.coordinates);
       } //end onEachFeature
-    });  
-  });  
+    });
+  });
   console.log(coords);
-  // create GUID file type
-    //var fso = CreateObject("Scripting.FileSystemObject");  
-    //var s = fso.CreateTextFile("C:\test.txt", True);
-    var strText = '';
-    var i = 1;
-    coords.forEach(form => //cada figura a iterar : 1
+  var strText = '';
+  var i = 1;
+  coords.forEach(form => //cada figura a iterar : 1
+  {
+    var j = 1;
+    form.forEach(element => //element sera un arreglo que contiene todos los renglones
+    {
+      element.forEach(coordinate => //element sera un arreglo que contiene todos los renglones
       {
-        var j = 1;
-        form.forEach(element => //element sera un arreglo que contiene todos los renglones
-          {
-            element.forEach(coordinate => //element sera un arreglo que contiene todos los renglones
-              {            
-                var x = Math.abs(parseFloat(coordinate[0])) / 0.1;
-                var y = Math.abs(parseFloat(coordinate[1])) / 0.9;
-                x = x * 10000;
-                y = y * 100000;
-                var line = "id;" + "Segment " + i + ";" + j + ";" + x +";"+ y + '\n';
-                strText += line;
-                //s.writeline(line);
-                j++;
-              });
-          });
-          i++;
+        var x = Math.abs(parseFloat(coordinate[0])) / 0.1;
+        var y = Math.abs(parseFloat(coordinate[1])) / 0.9;
+        x = x * 10000;
+        y = y * 100000;
+        var line = "id;" + "Segment " + i + ";" + j + ";" + x + ";" + y + '\n';
+        strText += line;
+        j++;
       });
-      console.log(strText);
-      //save the file now:
-      document.getElementById('download').href = "data:text/plain;charset=UTF-8,"  + encodeURIComponent(strText);
-    //s.Close();
+    });
+    i++;
+  });
+  console.log(strText);
 }
 
 function readSingleFile(e) {
-    var file = e.target.files[0];
-    if (!file) {
-      return;
-    }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      guid_Coordinates = e.target.result;
-      textFileToObject();
-    };
-    reader.readAsText(file);
+  var file = e.target.files[0];
+  if (!file) {
+    return;
   }
-  document.getElementById('btnFile').addEventListener('change', readSingleFile, false);
-  document.getElementById('download').addEventListener('click', saveCoordinatesFile, false);
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    textFile = e.target.result;
+    textFileToObject();
+  };
+  reader.readAsText(file);
+}
+document.getElementById('btnFile').addEventListener('change', readSingleFile, false);
 
 
-  function showPanel(){
-    var displayStatus = document.getElementById('sidebar').style.display;
-    if(displayStatus === "none" || displayStatus === ""){
-      document.getElementById('sidebar').style.display = "inline-block";
-    }
-    else{
-      document.getElementById('sidebar').style.display = "none";
-    }
+function showPanel() {
+  var displayStatus = document.getElementById('sidebar').style.display;
+  if (displayStatus === "none" || displayStatus === "") {
+    document.getElementById('sidebar').style.display = "inline-block";
   }
-//map.on('click', onMapClick);
+  else {
+    document.getElementById('sidebar').style.display = "none";
+  }
+}
+
+
+
