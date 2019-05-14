@@ -50,11 +50,22 @@
 					<div class="container-fluid">
 						<div class="panel panel-default">
 							<div class="panel-heading">Load File</div>
-							<div class="panel-body"><input type="file" class="form-control-file" id="btnFile"></div>
+							<div class="panel-body"><input type="file" class="form-control-file" id="btnFile" /></div>
 						</div>
 						<div class="panel panel-default">
 							<div class="panel-heading">Color Selection</div>
-							<div class="panel-body"><input type="color" id="color" placeholder="color" name="favcolor"value="#ff0000"></div>
+							<div class="panel-body"><input type="color" id="color" placeholder="color" name="favcolor"value="#ff0000" /></div>
+						</div>
+						<div class="panel panel-default">
+							<div class="panel-heading">Data Selection</div>
+							<div class="panel-body">
+								<form>
+									<input type="radio" id="rdCiudad" value="Ciudad" name="dataSelection"/>  
+									<label for="rdCiudad">Ciudad</label></br>
+									<input type="radio" id="rdId" value="Id" name="dataSelection"/>
+									<label for="rdId">Id</label>
+								</form>
+							</div>
 						</div>
 					</div>
 				</div>
