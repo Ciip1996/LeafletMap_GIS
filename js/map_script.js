@@ -13,13 +13,7 @@ var map = L.map('mapid', {
   zoom: 10
 });
 
-function onEachFeature1(feature, layer) {
-  layer.on({
-    mouseover: alert(":v"),
-    mouseout: alert(":v"),
-    click: alert(":v")
-  });
-}
+
 /*
 -  Global Variables: 
 */
@@ -153,15 +147,34 @@ function textFileToObject() {
     var newLayer = new L.FeatureGroup();
     map.addLayer(newLayer);
 
+    /*newLayer.on('click', function(e) {
+      objectOut = newLayer.toGeoJSON();
+      textOut = JSON.stringify(objectOut);
+      alert(textOut);
+      var highlight = {
+        'color': '#fff',
+        'weight': 2,
+        'opacity': 1
+      };    
+      newLayer.setStyle(highlight);
+    });*/
+    
     var _color = document.getElementById("color").value.toString();
     
-    /*geojson = L.geoJson(statesData, {
-      style: style,
-      onEachFeature: onEachFeature
-    }).addTo(map);
-    */
     arrayPolygon.forEach(element => {
       var _polygone = L.polygon(element.coordinates, { color: _color }).addTo(map).bindPopup("Ciudad: " + element.ciudad + " Id:" + element.guid);
+      _polygone.on('click', function(e) {
+        //objectOut = newLayer.toGeoJSON();
+        //textOut = JSON.stringify(objectOut);
+        //alert(textOut);
+        var highlight = {
+          'color': 'blue',
+          'weight': 3,
+          'opacity': 1
+        };    
+        _polygone.setStyle(highlight);
+      });
+  
       newLayer.addLayer(_polygone);
     });
 
@@ -255,6 +268,4 @@ function showPanel() {
     document.getElementById('sidebar').style.display = "none";
   }
 }
-
-
 
